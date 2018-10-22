@@ -1,0 +1,78 @@
+{% load staticfiles %}
+{% load static %}
+{% load app_filters %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Refresher Tool</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+         
+        
+
+        <style>
+                body {
+                 /* background: #0b0d0e; */
+                  background-image: url( "{% static 'images/test.png' %}");
+                  background-size: cover;
+                  background-repeat: no-repeat;
+                  background-attachment: fixed;
+                  background-position: center; 
+
+         
+                  color: #ADDEE1;
+                }
+
+
+        </style>
+    </head>
+    <body>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">
+                  <img alt="logo goes here" src="{% static "images/logo.png" %}" height="60" width="90">
+                </a>
+              </div>
+            </div>
+            {% if user.is_authenticated %}
+            <p>Logged on: {{ user.first_name }} {{ user.last_name }}<p>
+         <!--   <p><a href="{% url 'logout' %}">logout</a></p> -->
+            <a href="{% url 'logout' %}" class="btn btn-primary" role="button">Logout&ensp;<i class="fas fa-sign-out-alt"></i></a>
+            {% else %}
+            <p>You are currently logged out.</p>
+            {% endif %}
+          </nav>
+        <!--  <ul class="navbar-nav">
+            {% if user.is_authenticated %}
+            {{user.sn}}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-user"></i> {% if user.first_name %}{{ user.first_name }} {{ user.last_name }}{% else %}{{ user.username }}{% endif %}
+              </a>
+              <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="/logout">Logout</a>
+              </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link">
+                <i class="fas fa-user"></i> Please Login
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      </nav> -->
+
+
+
+            {% block content %}
+           
+            {% endblock %} 
+    </body>
+</html>

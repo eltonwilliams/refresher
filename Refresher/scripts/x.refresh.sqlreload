@@ -1,0 +1,5 @@
+load database REDLEWIS from '/data/backupsybase/data/REDLEWIS.dmp'
+go
+online database REDLEWIS
+go
+

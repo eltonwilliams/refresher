@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+
+
+<div class="page-header">
+        <h3 class="text-center">Summary</h3>
+        </div>
+
+        <form action="{% url 'index' %}">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-columns"></i>&emsp;Back to main</button>
+                        </form>
+
+
+        <div class="container">                    
+        <div class="jumbotron" style="background-color: #171a1c">
+                <div class="alert alert-success" role="alert" style="text-align: center"><strong>Success!</strong> Refresh completed successfuly.</div>
+                <ul>
+                        <h4>{{ branch }}</h4>
+                        <h5>Server now refreshed to:</h5>
+                        {% for key,value in status.items %}
+                        {% if key != "Status" %}
+                        <li class="text-left" style="list-style-type:none;font-size: 12px;">{{key}} : {{value}}</li>
+                        {% endif %}
+                        {% endfor %}
+                </ul>
+                <div class="btn btn-info">View Log</div>
+        </div>
+        </div>
+        
+
+
+{% endblock %}

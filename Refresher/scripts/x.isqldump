@@ -1,0 +1,2 @@
+SQLDUMP=/tmp/x.sqldump
+isql -Ulewis -S`hostname -s` -Predpassword  < $SQLDUMP  >> /tmp/testdmp.log

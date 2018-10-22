@@ -1,0 +1,3 @@
+dump database REDLEWIS to '/tmp/backupsybase/REDLEWIS.dmp'
+go
+

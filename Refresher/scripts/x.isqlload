@@ -1,0 +1,2 @@
+SQLRELOAD=/tmp/x.sqlreload
+isql -Ulewis -S`hostname -s` -Predpassword  < $SQLRELOAD  >> /tmp/testdmp.log

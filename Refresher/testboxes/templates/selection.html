@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <form action="{% url 'index' %}">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-chevron-circle-left"></i>&emsp;Back</button>
+    </form>
+    <div class="py-5">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12">
+              <h1 class="display-4">Release selection.</h1>
+              <small class="form-text text-muted">Please input what releases should be applied.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="py-5">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-6">
+              
+                <ul>
+                    <h3>{{group}} - {{branch}}</h3>
+                    <small class="form-text text-muted">Current release status.</small>
+                    {% for key,value in status.items %}
+                    {% if key == "Status" %}
+                      {% if value == "online" %}
+                        <li class="text-left" style="list-style-type:none;font-size: 20px;color: green;">{{key}} : {{value}}</li>
+                      {% else %}
+                        <li class="text-left" style="list-style-type:none;font-size: 20px;color: rgba(219, 45, 45, 0.533);">{{key}} : {{value}}</li>
+                      {% endif %}
+                    {% else %}
+                    <li class="text-left" style="list-style-type:none;font-size: 15px;color: #ADDEE1">{{key}} : {{value}}</li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+    
+            <div class="col-md-6">
+                <form class="" action="{% url 'apply' %}">
+                    <input type="hidden" value="{{branch}}" name="branch" />
+                    <input type="hidden" value="{{group}}" name="group" />
+                    <input type="hidden" value="{{ user.first_name }} {{ user.last_name }}" name="user" />
+                    <div class="form-group">
+                      <label for="DB">Refresh DB to...</label>
+                        <input type="text" class="form-control" id="DB" placeholder="Eg. 470" name="DB">
+                    </div>
+                    <div class="form-group">        
+                          <div class="checkbox">
+                            <label><input type="checkbox" name="restore"> Include CERES</label>
+                          </div>
+                      </div>
+                   <!-- <div class="form-group">
+                      <label for="Desktop">Refresh Desktop to...</label>         
+                        <input type="text" class="form-control" id="Desktop" disabled="disabled" placeholder="Eg. 31.1" name="Desktop">
+                    </div>-->
+                    
+                    <div class="form-group">        
+                        <button type="submit" class="btn btn-info">Apply</button>
+                    </div>
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+{% endblock %}

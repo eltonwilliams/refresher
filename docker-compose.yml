@@ -1,0 +1,58 @@
+version: '3'
+volumes:
+        static_files:
+services:
+        #broker service - rabbitMQ
+        rabbit:
+                        hostname: rabbit
+                        image: rabbitmq:latest
+                        environment:
+                                - RABBITMQ_DEFAULT_USER=reduser
+                                - RABBITMQ_DEFAULT_PASS=redpassword
+                        ports:
+                                - "5672:5672"
+
+        #Django refresher application                          
+        refresher:
+                        build: ./Refresher
+                        #command: python manage.py runserver 0.0.0.0:8000
+                        command: /usr/local/bin/gunicorn Refresher.wsgi:application -w 2 -b :8000
+                        volumes:
+                                - ./Refresher:/app/Refresher
+                                - static_files:/static_files
+                        ports:
+                                - "8000:8000"
+
+        # Nginx to serve refresher
+        nginx:
+                        restart: always
+                        build: ./nginx
+                        volumes:
+                                - static_files:/static_files
+                        links:
+                                - refresher:refresher
+                        ports:
+                                - "80:80"
+
+        #Celery worker that links to rabbit                          
+        worker:
+                        build: ./Refresher
+                        command: celery -A Refresher worker --loglevel=info 
+                        volumes:
+                                - ./Refresher:/app/Refresher
+                        links:
+                                - rabbit
+                        depends_on:
+                                - rabbit
+
+        #Used to manage celery tasks
+        flower:
+                        build: ./Refresher
+                        command: flower -A Refresher --port=5555
+                        volumes:
+                                - ./Refresher:/app/Refresher
+                        ports:
+                                - "5555:5555"
+                        depends_on:
+                                - rabbit
+                                - worker
