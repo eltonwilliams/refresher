@@ -219,6 +219,8 @@ def process(group, branch, server, DB, desktop, restore, user):
         print('EXTRACTING: tar -xf /le0/backupsybase/data/{}.ceres.tar -C /le0/{}/00/'.format(branch.zfill(4),branch.zfill(4)))
         stdin, stdout, stderr = client.exec_command('tar -xf /le0/backupsybase/data/{}.ceres.tar -C /le0/{}/00/'.format(branch.zfill(4),branch.zfill(4)))
         stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('gunzip -f /le0/{}/00/*.gz'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
         
         
     
