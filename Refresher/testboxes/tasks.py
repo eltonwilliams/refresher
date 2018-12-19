@@ -402,6 +402,14 @@ update branch_control set qr_code_enabled = 1;"""
     stdout.channel.recv_exit_status()
     print(SQL)
 
+    if restore:
+        update_message.update(message = "Step 3/5 : Sending x.drun.lun25 to activate menus")
+        print('Sending x.drun.lun25 to activate menus')
+        lewdev = connect()
+        stdin, stdout, stderr = lewdev.exec_command('scp /u1/le/release/006197/Obj.006197 {}00:/le0/release/'.format(prefix.lower()+branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        lewdev.close()
+
     print('removing refresh lock -> rm -f /le0/pbin/LCK..drun')
     update_message.update(message = "Step 3/5 :	Removing refresh lock...")
     stdin, stdout, stderr = client.exec_command('rm -f /le0/pbin/LCK..drun')
