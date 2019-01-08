@@ -226,6 +226,26 @@ def process(group, branch, server, DB, desktop, restore, user):
     
     stdin, stdout, stderr = client.exec_command('echo $HOSTNAME')
     hostname = stdout.readline()
+    print("creating backup for user, printer and pinpad on {}".format(hostname))
+    update_message.update(message = "Step 2/5 :	Backing up testbox data (user/printer/pinpad)")
+    stdin, stdout, stderr = client.exec_command('mkdir /tmp/refresh_backup')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh c_user DIRECT out')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh dbnbtabl DIRECT out')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh pin_pad DIRECT out')
+    stdout.channel.recv_exit_status()
+    if restore:
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+
 
     print("restarting sybase on {}".format(hostname))
     update_message.update(message = "Step 2/5 :	Restarting the sybase service.")
@@ -432,6 +452,31 @@ update branch_control set qr_code_enabled = 1;"""
 
         except Exception as e:
             print(e)
+
+    
+    print("creating backup for user, printer and pinpad on {}".format(hostname))
+    update_message.update(message = "Step 2/5 :	Restoring testbox data (user/printer/pinpad)")
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/x.redlewis.trunc.table.pl c_user')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/x.redlewis.trunc.table.pl dbnbtabl')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/x.redlewis.trunc.table.pl pin_pad')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh c_user DIRECT in')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh dbnbtabl DIRECT in')
+    stdout.channel.recv_exit_status()
+    stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh pin_pad DIRECT in')
+    stdout.channel.recv_exit_status()
+    if restore:
+        stdin, stdout, stderr = client.exec_command('cp /tmp/refresh_backup/dbnbtabl /le0/{}/00/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /tmp/refresh_backup/dbnbtabl.idx /le0/{}/00/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /tmp/refresh_backup/dbnbuser /le0/{}/00/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /tmp/refresh_backup/dbnbuser.idx /le0/{}/00/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
 
     
     update_message.update(message = "Step 4/5 :	Unlocking system.")
