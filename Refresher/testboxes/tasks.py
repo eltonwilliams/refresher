@@ -185,7 +185,7 @@ def process(group, branch, server, DB, desktop, restore, user):
 
     print(server)
     if server != "n010800.lewis.co.za":
-        if server == "t018800.lewis.co.za":
+        if server == "t018700.lewis.co.za":
             update_message.update(message = "Step 1/5 :	Skipping Brance/Tranlog Services (no workstation)")
 
         else:
@@ -202,6 +202,8 @@ def process(group, branch, server, DB, desktop, restore, user):
         update_message.update(message = "Step 1/5 :	Sending files needed for refresh...")
         stdin, stdout, stderr = lewdev.exec_command('scp /u/ejw/toBox/x.refresh* {}00:/tmp/'.format(prefix.lower()+branch.zfill(4)))
         stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = lewdev.exec_command('scp /u/ejw/toBox/redlewis_load_test_ips.sql {}00:/le0/redlewis/'.format(prefix.lower()+branch.zfill(4)))
+        stdout.channel.recv_exit_status()
         lewdev.close()
     
     
@@ -210,11 +212,24 @@ def process(group, branch, server, DB, desktop, restore, user):
     #connecting to server
     client = connect(server)
 
+    stdin, stdout, stderr = client.exec_command('mkdir /tmp/refresh_backup')
+    stdout.channel.recv_exit_status()
+
     update_message.update(message = "Step 1/5 :	Starting refresh process for {}.".format(prefix+branch))
 
 
     ##actual procedure
     if restore:
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
+        stdout.channel.recv_exit_status()
+
+
         update_message.update(message = "Step 2/5 :	Extracting CERES files...")
         print('EXTRACTING: tar -xf /le0/backupsybase/data/{}.ceres.tar -C /le0/{}/00/'.format(branch.zfill(4),branch.zfill(4)))
         stdin, stdout, stderr = client.exec_command('tar -xf /le0/backupsybase/data/{}.ceres.tar -C /le0/{}/00/'.format(branch.zfill(4),branch.zfill(4)))
@@ -228,23 +243,13 @@ def process(group, branch, server, DB, desktop, restore, user):
     hostname = stdout.readline()
     print("creating backup for user, printer and pinpad on {}".format(hostname))
     update_message.update(message = "Step 2/5 :	Backing up testbox data (user/printer/pinpad)")
-    stdin, stdout, stderr = client.exec_command('mkdir /tmp/refresh_backup')
-    stdout.channel.recv_exit_status()
+    
     stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh c_user DIRECT out')
     stdout.channel.recv_exit_status()
     stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh dbnbtabl DIRECT out')
     stdout.channel.recv_exit_status()
     stdin, stdout, stderr = client.exec_command('/le0/redlewis/bcp.sh pin_pad DIRECT out')
     stdout.channel.recv_exit_status()
-    if restore:
-        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl /tmp/refresh_backup/'.format(branch.zfill(4)))
-        stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbtabl.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
-        stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser /tmp/refresh_backup/'.format(branch.zfill(4)))
-        stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command('cp /le0/{}/00/dbnbuser.idx /tmp/refresh_backup/'.format(branch.zfill(4)))
-        stdout.channel.recv_exit_status()
 
 
     print("restarting sybase on {}".format(hostname))
@@ -335,6 +340,8 @@ def process(group, branch, server, DB, desktop, restore, user):
 
     dblist = []
     dbout = []
+    rem = []
+    inp = int(dbversion)
     stdin, stdout, stderr = client.exec_command('ls /le0/redlewis/scheme/red*.sql')
     lists = stdout.readlines()
     
@@ -346,9 +353,9 @@ def process(group, branch, server, DB, desktop, restore, user):
 
      
 
-        inp = int(dbversion)
+        #inp = int(dbversion)
 
-        rem = []
+        #rem = []
         for i in new:
             try:
                 int(i)
@@ -437,16 +444,27 @@ update branch_control set qr_code_enabled = 1;"""
     print('RUNNING x.brn.demon')
     update_message.update(message = "Step 4/5 :	Running x.brn.demon...")
     stdin, stdout, stderr = client.exec_command('/le0/pbin/x.brn.demon')
+
+    file_to_check = '/le0/pbin/LCK..drun'
+
     while True:
         stdin, stdout, stderr = client.exec_command('x.getver.pl')
         lists = stdout.readlines()
+        stdin, stdout, stderr = client.exec_command('test -e {0} && echo exists'.format(file_to_check))
+        out = (stdout.read().strip().decode("utf-8"))
+        LCK_exists = out  == 'exists'
+
+
         try:
             dbver = (lists[0].strip())
             dbversion = (lists[0].strip())[3:]
+            
             time.sleep(20)
             print("LOOP DBVERSION >>> "+dbversion[1:]+"<<   >> entered DB >>"+DB)
-            if int(dbversion) == int(DB):
+            if int(dbversion) == int(DB) and not LCK_exists:
                 break
+            elif int(dbversion) == int(DB):
+                update_message.update(message = "Step 4/5 :     Running x.brn.demon - applying DB0{}".format(int(dbversion)))
             else:
                 update_message.update(message = "Step 4/5 :	Running x.brn.demon - applying DB0{}".format(int(dbversion)+1))
 
