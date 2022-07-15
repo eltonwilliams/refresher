@@ -1,7 +1,7 @@
 Django==2.1.1
 celery==4.2.1
 django-celery==3.2.2
-django-celery-results==1.0.1
+django-celery-results==2.4.0
 paramiko==2.4.1
 wget==3.2
 gunicorn==19.9.0
